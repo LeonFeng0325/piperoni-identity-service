@@ -1,0 +1,29 @@
+services:
+  pgdb:
+    image: postgres:14.3-alpine
+    hostname: postgres
+    container_name: local-pgdb
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=identity_database
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-postgres:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    depends_on:
+      - postgres
+    restart: always
+    ports:
+      - '5555:80'
+    environment:
+      PGADMIN_DEFAULT_EMAIL: leonfg2495@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: secret
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+volumes:
+  db-postgres:
+  pgadmin-data:
