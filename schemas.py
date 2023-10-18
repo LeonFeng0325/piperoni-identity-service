@@ -4,11 +4,16 @@ from pydantic import BaseModel
 
 class UserBase(BaseModel):
     email: str
+    password: str
 
 class User(UserBase):
-    is_active: bool
     first_name: str
     last_name: str
 
     class Config:
         from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
