@@ -6,9 +6,6 @@ from schemas import User
 from exception import AlreadyExistsError, InvalidParameterError, NotFoundError
 from utils.email_verification import is_valid_email
 from auth_password import verify_password
-from fastapi import Depends, HTTPException, status
-from auth_token import oauth2_scheme, SECRET_KEY, ALGORITHM
-from jose import JWTError, jwt
 
 # DB Handler class that handles all database interactions
 class DBHandler:

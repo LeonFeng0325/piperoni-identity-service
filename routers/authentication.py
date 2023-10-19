@@ -15,6 +15,9 @@ authentication_router = APIRouter(
 )
 
 
+# Helper function to verify if the incoming HTTP has the valid JWT as the bearer token.
+# A JWT is valid if it is not expired and can be correctly decoded and match with our database data.
+# JWT is signed by a secret key and should be keep safe.
 def get_current_user(token: str = Depends(oauth2_scheme), db_handler=Depends(get_db_handler)):
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
