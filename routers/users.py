@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from handlers import get_db_handler
+from handlers.handlers import get_db_handler
 from exception import  AppError, NotFoundError
 from schemas import User
 from routers.authentication import get_current_user

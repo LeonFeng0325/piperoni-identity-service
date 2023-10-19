@@ -24,5 +24,5 @@ async def reset(): # This endpoint will drop all db tables and recreate them in 
     Base.metadata.create_all(bind=engine)
 
 
-if __name__ == "__main__": # To start local sever, run ```python main.py```
+if __name__ == "__main__": # The entry point of the application. To start local sever, run ```python main.py```
     uvicorn.run("main:app", reload=True)
