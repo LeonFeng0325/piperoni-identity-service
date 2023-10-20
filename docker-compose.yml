@@ -1,6 +1,6 @@
 services:
   pgdb:
-    image: postgres:14.3-alpine
+    image: postgres:latest
     hostname: postgres
     container_name: identity_database
     restart: always
