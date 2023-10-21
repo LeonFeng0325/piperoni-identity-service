@@ -15,7 +15,7 @@ app.include_router(users.user_router)
 
 @app.get("/")
 async def index():
-    return {"message": "Hello There!"}
+    return {"message": "Welcome to our backend server for our Flutter Project!"}
 
 
 @app.get("/reset")
