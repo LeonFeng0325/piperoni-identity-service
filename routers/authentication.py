@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from auth_token import create_access_token, oauth2_scheme, SECRET_KEY, ALGORITHM
+from auth.auth_token import create_access_token, oauth2_scheme, SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
 from schemas import User, Token
-from handlers import get_db_handler
+from handlers.handlers import get_db_handler
 from exception import InvalidParameterError, AlreadyExistsError
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated

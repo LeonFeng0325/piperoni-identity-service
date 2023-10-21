@@ -4,3 +4,5 @@ venv/
 
 utils/__pycache__
 routers/__pycache__
+auth/__pycache__
+handlers/__pycache__

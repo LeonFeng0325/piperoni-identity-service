@@ -1,11 +1,11 @@
-from auth_password import get_password_hash
+from auth.auth_password import get_password_hash
 from sqlalchemy.orm import Session
 from sqlalchemy import delete
 from models import User as user_table
 from schemas import User
 from exception import AlreadyExistsError, InvalidParameterError, NotFoundError
 from utils.email_verification import is_valid_email
-from auth_password import verify_password
+from auth.auth_password import verify_password
 
 # DB Handler class that handles all database interactions
 class DBHandler:
