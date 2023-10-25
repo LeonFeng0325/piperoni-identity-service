@@ -1,11 +1,12 @@
 from auth.auth_password import get_password_hash
 from sqlalchemy.orm import Session
 from sqlalchemy import delete
-from models import User as user_table
-from schemas import User
+from models import User as user_table, Genre as genre_table, PersonalGenre as personal_genre_table
+from schemas import User, Genre
 from exception import AlreadyExistsError, InvalidParameterError, NotFoundError
 from utils.email_verification import is_valid_email
 from auth.auth_password import verify_password
+from typing import List
 
 # DB Handler class that handles all database interactions
 class DBHandler:
@@ -14,6 +15,7 @@ class DBHandler:
         super().__init__()
         self._db = db
     
+    # Users table queries
     def get_user_by_full_name(self, first_name: str, last_name: str):
         return self._db.query(user_table).filter(user_table.first_name == first_name.lower().strip(), user_table.last_name == last_name.lower().strip()).all()
     
@@ -74,3 +76,83 @@ class DBHandler:
         self._db.commit()
 
         return response
+    
+    # Genres table queries
+    def get_all_music_genre(self, skip: int = 0, limit: int = 100):
+        return self._db.query(genre_table).offset(skip).limit(limit).all()
+    
+    def create_genre(self, genre: Genre):
+        name = genre.name
+        db_genre = self.get_genre_by_name(name)
+        if db_genre:
+            raise AlreadyExistsError("Genre already exists.")
+
+        db_genre = genre_table(name=name)
+
+        self._db.add(db_genre)
+        self._db.commit()
+        self._db.refresh(db_genre)
+
+        return db_genre
+    
+    def get_genre_by_name(self, name:str):
+        if not name or len(name) == 0:
+            raise InvalidParameterError("Genre name is required.")
+        
+        name = name.strip()
+        return self._db.query(genre_table).filter(genre_table.name == name).first()
+    
+
+    def delete_genre_by_name(self, name: str):
+        db_genre = self.get_genre_by_name(name)
+        if not db_genre:
+            raise NotFoundError("Genre not found.")
+        
+        query = delete(genre_table).where(genre_table.name == name.strip())
+        response = self._db.execute(query)
+
+        self._db.commit()
+
+        return response
+    
+    def create_current_user_genres(self, genre_id: List[int], user_id: int):
+        arr = []
+
+        for id in genre_id:
+            db_instance = personal_genre_table(genre_id=id, user_id=user_id)
+            arr.append(db_instance)
+        
+        self._db.bulk_save_objects(arr)
+        self._db.commit()
+
+        return arr
+    
+    def get_current_user_genres(self, user_id: int):
+        results =  self._db.query(personal_genre_table).filter(personal_genre_table.user_id == user_id).all()
+        res = []
+        for result in results:
+            res.append(result.genre)
+
+        return res
+    
+    def get_all_personal_genres(self, skip: int = 0, limit: int = 100):
+        return self._db.query(personal_genre_table).offset(skip).limit(limit).all()
+
+        
+
+
+
+
+
+        
+        
+    
+
+        
+
+
+
+
+
+    
+

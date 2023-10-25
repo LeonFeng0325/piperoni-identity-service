@@ -17,6 +17,8 @@ services:
     build:
       context: .
     restart: always
+    environment: 
+      - POSTGRES_SERVER=pgdb
     depends_on:
       - pgdb
 
