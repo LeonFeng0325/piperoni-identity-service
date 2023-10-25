@@ -20,7 +20,7 @@ async def index():
     return {"message": "Welcome to our backend server for our Flutter Project!"}
 
 
-@app.get("/reset")
+@app.get("/reset", description="This endpoint rebuilds database based on latest db schemas")
 async def reset(db_session=Depends(get_db)): # This endpoint will drop all db tables and recreate them in database from scratch and add default data. This is a hack so we don't need to do database migrations.
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
@@ -29,6 +29,8 @@ async def reset(db_session=Depends(get_db)): # This endpoint will drop all db ta
     for data in data_queue:
         db_session.bulk_save_objects(data)
     db_session.commit()
+
+    return {"message": "Database has been rebuilt from scratch and initialized with default data."}
 
 
 if __name__ == "__main__": # The entry point of the application. To start local sever, run ```python main.py```

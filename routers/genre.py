@@ -39,7 +39,7 @@ async def get_personal_genres(db_handler=Depends(get_db_handler), current_user =
 
 
 @genre_router.get("/{genre_name}", status_code=status.HTTP_200_OK)
-async def get_genre_by_name(genre_name: str, db_handler=Depends(get_db_handler)):
+async def get_genre_by_name(genre_name: str, db_handler=Depends(get_db_handler), current_user = Depends(get_current_user)):
     try:
         db_genre = db_handler.get_genre_by_name(genre_name)
         if not db_genre:
@@ -54,7 +54,7 @@ async def get_genre_by_name(genre_name: str, db_handler=Depends(get_db_handler))
 
 
 @genre_router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_genre(genre: Genre, db_handler=Depends(get_db_handler)):
+async def create_genre(genre: Genre, db_handler=Depends(get_db_handler), current_user = Depends(get_current_user)):
     try:
         db_genre = db_handler.create_genre(genre)
     except AppError as e:
@@ -66,21 +66,8 @@ async def create_genre(genre: Genre, db_handler=Depends(get_db_handler)):
     }
 
 
-@genre_router.post("/batch", status_code=status.HTTP_201_CREATED, description="Bulk created a list of genres")
-async def batch_create_genre(db_handler=Depends(get_db_handler)):
-    try:
-        db_genre_list = db_handler.bulk_create_genres()
-    except AppError as e:
-        raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-    return {
-        "data": db_genre_list,
-        "messages": f"SUCCESS: {len(db_genre_list)}  genre created."
-    }
-
-
 @genre_router.delete("/{genre_name}", status_code=status.HTTP_200_OK)
-async def delete_genre(genre_name: str, db_handler=Depends(get_db_handler)):
+async def delete_genre(genre_name: str, db_handler=Depends(get_db_handler), current_user = Depends(get_current_user)):
     try:
         db_handler.delete_genre_by_name(genre_name)
     except NotFoundError as e:

@@ -1,13 +1,12 @@
 from auth.auth_password import get_password_hash
 from sqlalchemy.orm import Session
-from sqlalchemy import delete, select
+from sqlalchemy import delete
 from models import User as user_table, Genre as genre_table, PersonalGenre as personal_genre_table
 from schemas import User, Genre
 from exception import AlreadyExistsError, InvalidParameterError, NotFoundError
 from utils.email_verification import is_valid_email
 from auth.auth_password import verify_password
 from typing import List
-from preflight import genre_list
 
 # DB Handler class that handles all database interactions
 class DBHandler:
@@ -115,12 +114,6 @@ class DBHandler:
         self._db.commit()
 
         return response
-    
-    def bulk_create_genres(self):
-        self._db.bulk_save_objects(genre_list)
-        self._db.commit()
-
-        return genre_list
     
     def create_current_user_genres(self, genre_id: List[int], user_id: int):
         arr = []
