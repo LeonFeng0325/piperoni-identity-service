@@ -17,3 +17,9 @@ class User(UserBase):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class Genre(BaseModel):
+    name: str
+
+    class Config:
+        from_attributes = True
