@@ -17,7 +17,7 @@ class DBHandler:
     
     # Users table queries
     def get_user_by_full_name(self, first_name: str, last_name: str):
-        return self._db.query(user_table).filter(user_table.first_name == first_name.lower().strip(), user_table.last_name == last_name.lower().strip()).all()
+        return self._db.query(user_table).filter(user_table.first_name == first_name.strip(), user_table.last_name == last_name.strip()).all()
     
     def get_user_by_email(self, email: str):
         return self._db.query(user_table).filter(user_table.email == email.strip()).first()
@@ -39,8 +39,8 @@ class DBHandler:
     def create_user(self, user: User):
         user_email = user.email.strip()
         password = user.password.strip()
-        first_name = user.first_name.lower().strip()
-        last_name = user.last_name.lower().strip()
+        first_name = user.first_name.strip()
+        last_name = user.last_name.strip()
 
         db_user = self.get_user_by_email(user_email)
         # Sanity check

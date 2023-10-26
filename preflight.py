@@ -3,8 +3,11 @@ from auth.auth_password import get_password_hash
 # Define some data when database resets
 
 user_list = [
-    User(first_name="michael", last_name="smith", is_admin=False, hashed_password=get_password_hash("password"), email="ms2023@yahoo.com"),
-    User(first_name="alan", last_name="turing", is_admin=False, hashed_password=get_password_hash("password"), email="at2023@gmail.com")
+    User(first_name="Rishabh", last_name="Poikayil", is_admin=False, hashed_password=get_password_hash("password"), email="rishabh_poikayil@ucsb.edu"),
+    User(first_name="Leon", last_name="Feng", is_admin=False, hashed_password=get_password_hash("password"), email="b_feng@ucsb.edu"),
+    User(first_name="Aviv", last_name="Samet", is_admin=False, hashed_password=get_password_hash("password"), email="aviv@ucsb.edu"),
+    User(first_name="Kirill", last_name="Aristarkhov", is_admin=False, hashed_password=get_password_hash("password"), email="kya@ucsb.edu"),
+    User(first_name="Andy", last_name="Gonzalez", is_admin=False, hashed_password=get_password_hash("password"), email="andysgonzalez@ucsb.edu")
 ]
 
 genre_list = [
