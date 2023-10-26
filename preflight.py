@@ -1,4 +1,4 @@
-from models import Genre, User, PersonalGenre
+from models import Genre, User, PersonalGenre, Instrument, PersonalInstrument
 from auth.auth_password import get_password_hash
 # Define some data when database resets
 
@@ -34,4 +34,27 @@ personal_genre_list = [
     PersonalGenre(user_id=2, genre_id=6),
 ]
 
+instrument_list = [
+    Instrument(name="Guitar"),
+    Instrument(name="Cello"),
+    Instrument(name="Banjo"),
+    Instrument(name="Bass"),
+    Instrument(name="Harp"),
+    Instrument(name="Saxophone"),
+    Instrument(name="Clarinet"),
+    Instrument(name="Electric Keyboard"),
+    Instrument(name="Glass Harmonica"),
+    Instrument(name="Accordion"),
+    Instrument(name="Piano"),
+    Instrument(name="Drum"),
+    Instrument(name="Tube"),
+]
 
+personal_instrument_list = [
+    PersonalInstrument(user_id=1, instrument_id=3),
+    PersonalInstrument(user_id=1, instrument_id=5),
+    PersonalInstrument(user_id=1, instrument_id=7),
+    PersonalInstrument(user_id=2, instrument_id=1),
+    PersonalInstrument(user_id=2, instrument_id=2),
+    PersonalInstrument(user_id=2, instrument_id=6)
+]

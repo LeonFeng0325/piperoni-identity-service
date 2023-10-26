@@ -33,7 +33,7 @@ async def get_personal_genres(db_handler=Depends(get_db_handler), current_user =
         raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     return {
-        "data": db_personal_list,
+        "data": {"user": current_user.email, "payload": db_personal_list},
         "messages": f"SUCCESS: genres retrieved for current user."
     }
 
@@ -78,6 +78,19 @@ async def delete_genre(genre_name: str, db_handler=Depends(get_db_handler), curr
         "message": f"SUCCESS: genre deleted by name."
     }
 
+@genre_router.delete("/me/{genre_id}", status_code=status.HTTP_200_OK)
+async def delete_personal_genre(genre_id: int, db_handler=Depends(get_db_handler), current_user = Depends(get_current_user)):
+    try:
+        current_user_id = current_user.id
+        db_handler.delete_current_user_genre(current_user_id, genre_id)
+    except NotFoundError as e:
+        raise HTTPException(detail=str(e), status_code=status.HTTP_404_NOT_FOUND)
+    
+    return {
+        "data": {"user": current_user.email},
+        "message": f"SUCCESS: personal genre deleted by id."
+    }
+
 
 @genre_router.post("/me", status_code=status.HTTP_201_CREATED)
 async def create_personal_genres(genre_id: List[int], db_handler=Depends(get_db_handler), current_user: User = Depends(get_current_user)):
@@ -88,6 +101,6 @@ async def create_personal_genres(genre_id: List[int], db_handler=Depends(get_db_
         raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     return {
-        "data": db_genre,
+        "data": {"user": current_user.email, "payload": db_genre},
         "messages": f"SUCCESS:  genre created."
     }
