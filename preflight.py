@@ -35,6 +35,15 @@ personal_genre_list = [
     PersonalGenre(user_id=2, genre_id=2),
     PersonalGenre(user_id=2, genre_id=4),
     PersonalGenre(user_id=2, genre_id=6),
+    PersonalGenre(user_id=3, genre_id=1),
+    PersonalGenre(user_id=3, genre_id=2),
+    PersonalGenre(user_id=3, genre_id=3),
+    PersonalGenre(user_id=4, genre_id=5),
+    PersonalGenre(user_id=4, genre_id=6),
+    PersonalGenre(user_id=4, genre_id=7),
+    PersonalGenre(user_id=5, genre_id=8),
+    PersonalGenre(user_id=5, genre_id=9),
+    PersonalGenre(user_id=5, genre_id=10),
 ]
 
 instrument_list = [
@@ -59,5 +68,14 @@ personal_instrument_list = [
     PersonalInstrument(user_id=1, instrument_id=7),
     PersonalInstrument(user_id=2, instrument_id=1),
     PersonalInstrument(user_id=2, instrument_id=2),
-    PersonalInstrument(user_id=2, instrument_id=6)
+    PersonalInstrument(user_id=2, instrument_id=6),
+    PersonalInstrument(user_id=3, instrument_id=3),
+    PersonalInstrument(user_id=3, instrument_id=4),
+    PersonalInstrument(user_id=3, instrument_id=7),
+    PersonalInstrument(user_id=4, instrument_id=1),
+    PersonalInstrument(user_id=4, instrument_id=4),
+    PersonalInstrument(user_id=4, instrument_id=5),
+    PersonalInstrument(user_id=5, instrument_id=2),
+    PersonalInstrument(user_id=5, instrument_id=3),
+    PersonalInstrument(user_id=5, instrument_id=5)
 ]
