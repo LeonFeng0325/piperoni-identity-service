@@ -2,8 +2,8 @@ import uvicorn
 from fastapi import FastAPI, Depends
 from database import engine, get_db
 from models import Base
-from routers import users, authentication, genre
-from preflight import genre_list, user_list, personal_genre_list
+from routers import users, authentication, genre, instrument
+from preflight import genre_list, user_list, personal_genre_list, instrument_list, personal_instrument_list
 
 Base.metadata.create_all(bind=engine) # Create database tables on server start.
 
@@ -13,6 +13,7 @@ app = FastAPI()
 app.include_router(authentication.authentication_router)
 app.include_router(users.user_router)
 app.include_router(genre.genre_router)
+app.include_router(instrument.instrument_router)
 
 
 @app.get("/")
@@ -25,7 +26,7 @@ async def reset(db_session=Depends(get_db)): # This endpoint will drop all db ta
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     # Auto insert some default data to the new database
-    data_queue = [user_list, genre_list, personal_genre_list]
+    data_queue = [user_list, genre_list, personal_genre_list, instrument_list, personal_instrument_list]
     for data in data_queue:
         db_session.bulk_save_objects(data)
     db_session.commit()

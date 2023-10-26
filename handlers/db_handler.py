@@ -1,8 +1,8 @@
 from auth.auth_password import get_password_hash
 from sqlalchemy.orm import Session
 from sqlalchemy import delete
-from models import User as user_table, Genre as genre_table, PersonalGenre as personal_genre_table
-from schemas import User, Genre
+from models import User as user_table, Genre as genre_table, PersonalGenre as personal_genre_table, Instrument as instrument_table, PersonalInstrument as personal_instrument_table
+from schemas import User, Genre, Instrument
 from exception import AlreadyExistsError, InvalidParameterError, NotFoundError
 from utils.email_verification import is_valid_email
 from auth.auth_password import verify_password
@@ -115,6 +115,18 @@ class DBHandler:
 
         return response
     
+
+    def delete_current_user_genre(self, user_id: int, genre_id: int):
+        results = self._db.query(personal_genre_table).where(personal_genre_table.user_id==user_id)
+        for result in results:
+            if result.genre_id == genre_id:
+                query = delete(personal_genre_table).where(personal_genre_table.genre_id == genre_id)
+                self._db.execute(query)
+                self._db.commit()
+                return
+        
+        raise NotFoundError("Personal genre with given genre id not found.")
+    
     def create_current_user_genres(self, genre_id: List[int], user_id: int):
         arr = []
 
@@ -138,21 +150,61 @@ class DBHandler:
     def get_all_personal_genres(self, skip: int = 0, limit: int = 100):
         return self._db.query(personal_genre_table).offset(skip).limit(limit).all()
 
+    # Instrument table queries
+    def get_all_instrument(self, skip: int = 0, limit: int = 100):
+        return self._db.query(instrument_table).offset(skip).limit(limit).all()
+    
+    def get_instrument_by_name(self, name: str):
+        if not name or len(name) == 0:
+            raise InvalidParameterError("Instrument name is required.")
         
-
-
-
-
-
-        
-        
+        name = name.strip()
+        return self._db.query(instrument_table).filter(instrument_table.name == name).first()
     
 
+    def create_instrument(self, instrument: Instrument):
+        instrument_name = instrument.name
+        db_instrument = self.get_instrument_by_name(instrument_name)
+        if db_instrument:
+            raise AlreadyExistsError("Instrument already exists")
         
+        db_instrument = instrument_table(name=instrument_name)
+        self._db.add(db_instrument)
+        self._db.commit()
+        self._db.refresh(db_instrument)
 
-
-
-
-
+        return db_instrument
     
+    def delete_instrument_by_name(self, instrument_name: str):
+        db_instrument = self.get_instrument_by_name(instrument_name)
+        if not db_instrument:
+            raise NotFoundError("Instrument not found.")
+        
+        query = delete(instrument_table).where(instrument_table.name == instrument_name)
+        self._db.execute(query)
+        self._db.commit()
 
+        return
+    
+    def create_personal_instruments(self, user_id: int, instrument_id: List[int]):
+        arr = []
+    
+        for id in instrument_id:
+            db_instance = personal_instrument_table(user_id=user_id, instrument_id=id)
+            arr.append(db_instance)
+        
+        self._db.bulk_save_objects(arr)
+        self._db.commit()
+
+        return arr
+        return db_personal_instrument
+    
+    def get_current_user_instruments(self, user_id):
+        results =  self._db.query(personal_instrument_table).filter(personal_instrument_table.user_id == user_id).all()
+        res = []
+        for result in results:
+            res.append(result.instrument)
+
+        return res
+
+        
