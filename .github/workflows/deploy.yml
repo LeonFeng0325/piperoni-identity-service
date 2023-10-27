@@ -20,7 +20,7 @@ jobs:
                 echo "$KEY" > /home/runner/.ssh/key.pem
                 chmod 700 /home/runner/.ssh/key.pem
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null	
-                ssh-add /home/runner/.ssh/github_actions
+                ssh-add /home/runner/.ssh/key.pem
                 ssh -i /home/runner/.ssh/key.pem -T ec2-user@$HOST << EOL
                 cd piperoni-identity-service
                 git checkout $BRANCH
