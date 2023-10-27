@@ -9,9 +9,19 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - name: Deploy to EC2
+              env:
+                KEY: ${{ secrets.SSH_KEY }}
+                HOST: ${{ secrets.INSTANCE_URL }}
+                BRANCH: ${{ github.ref_name }}
+                SSH_AUTH_SOCK: /tmp/ssh_agent.sock
               run: |
-                echo "$KEY" > key.pem
-                ssh -i key.pem -T ec2-user@$HOST << EOL
+                mkdir -p /home/runner/.ssh/
+                ssh-keyscan $HOST >> /home/runner/.ssh/known_hosts
+                echo "$KEY" > /home/runner/.ssh/key.pem
+                chmod 700 /home/runner/.ssh/key.pem
+                ssh-agent -a $SSH_AUTH_SOCK > /dev/null	
+                ssh-add /home/runner/.ssh/github_actions
+                ssh -i /home/runner/.ssh/key.pem -T ec2-user@$HOST << EOL
                 cd piperoni-identity-service
                 git checkout $BRANCH
                 git pull
@@ -19,7 +29,4 @@ jobs:
                 sudo docker-compose build --no-cache
                 sudo docker-compose up -d
                 EOL
-              env:
-                    KEY: ${{ secrets.SSH_KEY }}
-                    HOST: ${{ secrets.INSTANCE_URL }}
-                    BRANCH: ${{ github.ref_name }}
+              
