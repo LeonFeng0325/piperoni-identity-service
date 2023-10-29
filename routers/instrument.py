@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from handlers.handlers import get_db_handler
 from routers.authentication import get_current_user
-from exception import  AppError, NotFoundError, AlreadyExistsError, InvalidParameterError
+from exception import  AppError, NotFoundError, AlreadyExistsError
 from schemas import Instrument, User
 from typing import List
 
 instrument_router = APIRouter(
     prefix="/api/instruments",
-    tags=["instrument"]
+    tags=["instruments"]
 )
 
 @instrument_router.get("/all", status_code=status.HTTP_200_OK)
@@ -32,12 +32,12 @@ async def get_current_user_instruments(db_handler=Depends(get_db_handler), curre
     
     return {
         "data": {"user": current_user.email, "payload": result},
-        "messages": f"SUCCESS:  retrieved current user instruments."
+        "messages": f"SUCCESS: retrieved current user instruments."
     }
 
 
 @instrument_router.get("/{instrument_name}", status_code=status.HTTP_200_OK)
-async def get_instrument_by_name(instrument_name: str, db_handler=Depends(get_db_handler)):
+async def get_instrument_by_name(instrument_name: str, db_handler=Depends(get_db_handler), current_user: User=Depends(get_current_user)):
     try:
         db_instrument = db_handler.get_instrument_by_name(instrument_name)
         if not db_instrument:
@@ -49,12 +49,12 @@ async def get_instrument_by_name(instrument_name: str, db_handler=Depends(get_db
     
     return {
         "data": db_instrument,
-        "messages": f"SUCCESS:  instrument retrieved by name."
+        "messages": f"SUCCESS: instrument retrieved by name."
     }
     
 
 @instrument_router.post("", status_code=status.HTTP_201_CREATED)
-async def create_instrument(instrument: Instrument, db_handler=Depends(get_db_handler)):
+async def create_instrument(instrument: Instrument, db_handler=Depends(get_db_handler), current_user: User=Depends(get_current_user)):
     try:
         db_instrument = db_handler.create_instrument(instrument)
     except AlreadyExistsError as e:
@@ -64,12 +64,12 @@ async def create_instrument(instrument: Instrument, db_handler=Depends(get_db_ha
     
     return {
         "data": db_instrument,
-        "messages": f"SUCCESS:  instrument created."
+        "messages": f"SUCCESS: instrument created."
     }
 
 
 @instrument_router.delete("/{instrument_name}", status_code=status.HTTP_200_OK)
-async def delete_instrument_by_name(instrument_name: str, db_handler=Depends(get_db_handler)):
+async def delete_instrument_by_name(instrument_name: str, db_handler=Depends(get_db_handler), current_user: User=Depends(get_current_user)):
     try:
         db_handler.delete_instrument_by_name(instrument_name)
     except NotFoundError as e:
@@ -79,7 +79,7 @@ async def delete_instrument_by_name(instrument_name: str, db_handler=Depends(get
     
     return {
         "data": "",
-        "messages": f"SUCCESS:  instrument deleted."
+        "messages": f"SUCCESS: instrument deleted."
     }
 
 
@@ -93,8 +93,5 @@ async def create_current_user_instruments(instrument_id: List[int], db_handler=D
     
     return {
         "data": {"user": current_user.email, "payload": result},
-        "messages": f"SUCCESS:  created instruments for current user."
+        "messages": f"SUCCESS: created instruments for current user."
     }
-
-
-

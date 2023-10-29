@@ -1,7 +1,9 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
+from sqlalchemy import Boolean, Integer, String, ForeignKey
 from sqlalchemy.orm import mapped_column, Mapped, relationship
+from schemas import CollaborationPreference
 from database import Base
 from typing import List
+from sqlalchemy import Enum
 
 # Database models defined here
 
@@ -9,13 +11,25 @@ class User(Base):
     __tablename__ = "users"
 
     id = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
-    first_name = mapped_column(String)
-    last_name = mapped_column(String)
     email = mapped_column(String, unique=True, index=True, nullable=False) # User email has to be unique, and this is also user's username
     hashed_password = mapped_column(String, nullable=False) # Hashed using SHA 256 and user specific info
-    is_admin = mapped_column(Boolean, default=False) # If user has the admin status, so far unused
     genres: Mapped[List['PersonalGenre']] = relationship(back_populates='user', cascade="all,delete")
     instruments: Mapped[List['PersonalInstrument']] = relationship(back_populates='', cascade="all,delete")
+    details: Mapped['UserDetail'] = relationship(back_populates='user', cascade="all,delete")
+
+
+class UserDetail(Base):
+    __tablename__ = "user_details"
+    id = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id =  mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True)
+    first_name = mapped_column(String)
+    last_name = mapped_column(String)
+    title = mapped_column(String)
+    description = mapped_column(String)
+    preference: Mapped[CollaborationPreference] = mapped_column(Enum(CollaborationPreference), default=CollaborationPreference.no_preference)
+    address = mapped_column(String)
+    user: Mapped['User'] = relationship(back_populates="details")
+
 
 class Genre(Base):
     __tablename__ = "genres"

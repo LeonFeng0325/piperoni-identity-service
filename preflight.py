@@ -1,13 +1,14 @@
-from models import Genre, User, PersonalGenre, Instrument, PersonalInstrument
+from models import Genre, User, PersonalGenre, Instrument, PersonalInstrument, UserDetail
 from auth.auth_password import get_password_hash
+from schemas import CollaborationPreference
 # Define some data when database resets
 
 user_list = [
-    User(first_name="Rishabh", last_name="Poikayil", is_admin=False, hashed_password=get_password_hash("password"), email="rishabh_poikayil@ucsb.edu"),
-    User(first_name="Leon", last_name="Feng", is_admin=False, hashed_password=get_password_hash("password"), email="b_feng@ucsb.edu"),
-    User(first_name="Aviv", last_name="Samet", is_admin=False, hashed_password=get_password_hash("password"), email="aviv@ucsb.edu"),
-    User(first_name="Kirill", last_name="Aristarkhov", is_admin=False, hashed_password=get_password_hash("password"), email="kya@ucsb.edu"),
-    User(first_name="Andy", last_name="Gonzalez", is_admin=False, hashed_password=get_password_hash("password"), email="andysgonzalez@ucsb.edu")
+    User(hashed_password=get_password_hash("password"), email="rishabh_poikayil@ucsb.edu"),
+    User(hashed_password=get_password_hash("password"), email="b_feng@ucsb.edu"),
+    User(hashed_password=get_password_hash("password"), email="aviv@ucsb.edu"),
+    User(hashed_password=get_password_hash("password"), email="kya@ucsb.edu"),
+    User(hashed_password=get_password_hash("password"), email="andysgonzalez@ucsb.edu")
 ]
 
 genre_list = [
@@ -78,4 +79,12 @@ personal_instrument_list = [
     PersonalInstrument(user_id=5, instrument_id=2),
     PersonalInstrument(user_id=5, instrument_id=3),
     PersonalInstrument(user_id=5, instrument_id=5)
+]
+
+personal_detail_list = [
+    UserDetail(user_id=1, title="Music Producer", description="Hello, my name is Rishabh. I am a college student at UCSB.", preference=CollaborationPreference.no_preference, address="Santa Barbara, CA 93106", first_name="Rishabh", last_name="Poikayil"),
+    UserDetail(user_id=2, title="Guitarist", description="Hello, my name is Leon. I am a college student at UCSB.", preference=CollaborationPreference.in_person, address="Santa Barbara, CA 93106", first_name="Leon", last_name="Feng"),
+    UserDetail(user_id=3, title="Pianist", description="Hello, my name is Aviv. I am a college student at UCSB.", preference=CollaborationPreference.online, address="Santa Barbara, CA 93106",  first_name="Aviv", last_name="Samet"),
+    UserDetail(user_id=4, title="Pianist", description="Hello, my name is Kirill. I am a college student at UCSB.", preference=CollaborationPreference.in_person, address="Santa Barbara, CA 93106", first_name="Kirill", last_name="Aristarkhov"),
+    UserDetail(user_id=5, title="Music Producer", description="Hello, my name is Andy. I am a college student at UCSB.", preference=CollaborationPreference.in_person, address="Santa Barbara, CA 93106", first_name="Andy", last_name="Gonzalez")
 ]

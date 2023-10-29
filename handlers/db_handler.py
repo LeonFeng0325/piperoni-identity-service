@@ -1,7 +1,7 @@
 from auth.auth_password import get_password_hash
 from sqlalchemy.orm import Session
-from sqlalchemy import delete
-from models import User as user_table, Genre as genre_table, PersonalGenre as personal_genre_table, Instrument as instrument_table, PersonalInstrument as personal_instrument_table
+from sqlalchemy import delete, update
+from models import User as user_table, Genre as genre_table, PersonalGenre as personal_genre_table, Instrument as instrument_table, PersonalInstrument as personal_instrument_table, UserDetail as user_detail_table
 from schemas import User, Genre, Instrument
 from exception import AlreadyExistsError, InvalidParameterError, NotFoundError
 from utils.email_verification import is_valid_email
@@ -15,15 +15,8 @@ class DBHandler:
         super().__init__()
         self._db = db
     
-    # Users table queries
-    def get_user_by_full_name(self, first_name: str, last_name: str):
-        return self._db.query(user_table).filter(user_table.first_name == first_name.strip(), user_table.last_name == last_name.strip()).all()
-    
     def get_user_by_email(self, email: str):
         return self._db.query(user_table).filter(user_table.email == email.strip()).first()
-    
-    def get_user_by_hash(self, hash: str):
-        return self._db.query(user_table).filter(user_table.hashed_password == hash.strip()).first()
     
     def get_users(self, skip: int = 0, limit: int = 100):
         return self._db.query(user_table).offset(skip).limit(limit).all()
@@ -39,8 +32,6 @@ class DBHandler:
     def create_user(self, user: User):
         user_email = user.email.strip()
         password = user.password.strip()
-        first_name = user.first_name.strip()
-        last_name = user.last_name.strip()
 
         db_user = self.get_user_by_email(user_email)
         # Sanity check
@@ -50,15 +41,11 @@ class DBHandler:
             raise InvalidParameterError("Email is required.")
         if not is_valid_email(user_email):
             raise InvalidParameterError("Please provide a valid email.")
-        if not first_name or len(first_name) == 0:
-            raise InvalidParameterError("First name is required.")
-        if not last_name or len(last_name) == 0:
-            raise InvalidParameterError("Last name is required.")
         if not password or len(password) == 0:
             raise InvalidParameterError("Password is required")
 
         user_hash = get_password_hash(password) # Unique to each user
-        db_user = user_table(email=user.email, is_admin=False, first_name=first_name, last_name=last_name, hashed_password=user_hash)
+        db_user = user_table(email=user.email, hashed_password=user_hash)
 
         self._db.add(db_user)
         self._db.commit()
@@ -206,5 +193,36 @@ class DBHandler:
             res.append(result.instrument)
 
         return res
-
+    
+    # Personal detail table queries
+    def get_current_user_personal_details(self, user_id: int):
+        return self._db.query(user_detail_table).filter(user_detail_table.user_id == user_id).first()
+    
+    def get_all_user_personal_details(self):
+        return self._db.query(user_detail_table).all()
+    
+    
+    def create_current_user_personal_details(self, first_name: str, last_name: str, user_id: int):
+        db_user = self.get_current_user_personal_details(user_id)
+        if db_user:
+            raise AlreadyExistsError("User details have already been created.")
         
+        db_instance = user_detail_table(first_name=first_name, last_name=last_name, user_id=user_id)
+        self._db.add(db_instance)
+        self._db.commit()
+        self._db.refresh(db_instance)
+
+        return db_instance
+    
+    def update_current_user_personal_details_fields(self, field: str, data: str, user_id: int):
+        db_user_details = self.get_current_user_personal_details(user_id)
+        if not db_user_details:
+            raise NotFoundError("User has not initialized personal details.")
+        
+        query = update(user_detail_table).where(user_detail_table.user_id == user_id).values({field: data})
+
+        self._db.execute(query)
+        self._db.commit()
+        updated_user_detail = self.get_current_user_personal_details(user_id)
+
+        return updated_user_detail

@@ -62,7 +62,7 @@ async def create_genre(genre: Genre, db_handler=Depends(get_db_handler), current
     
     return {
         "data": db_genre,
-        "messages": f"SUCCESS:  genre created."
+        "messages": f"SUCCESS: genre created."
     }
 
 
@@ -78,6 +78,7 @@ async def delete_genre(genre_name: str, db_handler=Depends(get_db_handler), curr
         "message": f"SUCCESS: genre deleted by name."
     }
 
+
 @genre_router.delete("/me/{genre_id}", status_code=status.HTTP_200_OK)
 async def delete_personal_genre(genre_id: int, db_handler=Depends(get_db_handler), current_user = Depends(get_current_user)):
     try:
@@ -88,7 +89,7 @@ async def delete_personal_genre(genre_id: int, db_handler=Depends(get_db_handler
     
     return {
         "data": {"user": current_user.email},
-        "message": f"SUCCESS: personal genre deleted by id."
+        "message": f"SUCCESS: current user personal genre deleted by id."
     }
 
 
@@ -102,5 +103,5 @@ async def create_personal_genres(genre_id: List[int], db_handler=Depends(get_db_
     
     return {
         "data": {"user": current_user.email, "payload": db_genre},
-        "messages": f"SUCCESS:  genre created."
+        "messages": f"SUCCESS: genre created for current user."
     }

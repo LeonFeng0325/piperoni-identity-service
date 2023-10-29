@@ -1,14 +1,11 @@
 from pydantic import BaseModel
+import enum
 
 # Pydantic models defined here
 
-class UserBase(BaseModel):
+class User(BaseModel):
     email: str
     password: str
-
-class User(UserBase):
-    first_name: str
-    last_name: str
 
     class Config:
         from_attributes = True
@@ -29,3 +26,18 @@ class Instrument(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class CollaborationPreference(enum.Enum):
+    in_person = "In Person"
+    online = "Online"
+    no_preference = "No Preference"
+
+
+class UserDetailUpdate(BaseModel):
+    field: str # the column of the table you want to update
+    data: str # new value of the column
+
+class UserDetailCreate(BaseModel):
+    first_name: str
+    last_name: str
