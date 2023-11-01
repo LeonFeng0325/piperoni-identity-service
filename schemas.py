@@ -1,3 +1,4 @@
+from typing import List
 from pydantic import BaseModel
 import enum
 
@@ -41,3 +42,9 @@ class UserDetailUpdate(BaseModel):
 class UserDetailCreate(BaseModel):
     first_name: str
     last_name: str
+
+class PersonalGenresUpload(BaseModel):
+    id: List[int]
+
+class PersonalInstrumentsUpload(BaseModel):
+    id: List[int]

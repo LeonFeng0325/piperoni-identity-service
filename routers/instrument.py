@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from handlers.handlers import get_db_handler
 from routers.authentication import get_current_user
 from exception import  AppError, NotFoundError, AlreadyExistsError
-from schemas import Instrument, User
+from schemas import Instrument, User, PersonalInstrumentsUpload
 from typing import List
 
 instrument_router = APIRouter(
@@ -84,10 +84,11 @@ async def delete_instrument_by_name(instrument_name: str, db_handler=Depends(get
 
 
 @instrument_router.post("/me", status_code=status.HTTP_201_CREATED)
-async def create_current_user_instruments(instrument_id: List[int], db_handler=Depends(get_db_handler), current_user: User=Depends(get_current_user)):
+async def create_current_user_instruments(personal_instrument_list: PersonalInstrumentsUpload, db_handler=Depends(get_db_handler), current_user: User=Depends(get_current_user)):
     try:
         current_user_id = current_user.id
-        result = db_handler.create_personal_instruments(current_user_id, instrument_id)
+        personal_instrument_id_list = personal_instrument_list.id
+        result = db_handler.create_personal_instruments(current_user_id, personal_instrument_id_list)
     except AppError as e:
         raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     

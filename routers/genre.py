@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from handlers.handlers import get_db_handler
 from routers.authentication import get_current_user
 from exception import  AppError, NotFoundError
-from schemas import Genre, User
+from schemas import Genre, User, PersonalGenresUpload
 from typing import List
 
 genre_router = APIRouter(
@@ -94,10 +94,11 @@ async def delete_personal_genre(genre_id: int, db_handler=Depends(get_db_handler
 
 
 @genre_router.post("/me", status_code=status.HTTP_201_CREATED)
-async def create_personal_genres(genre_id: List[int], db_handler=Depends(get_db_handler), current_user: User = Depends(get_current_user)):
+async def create_personal_genres(personal_genres: PersonalGenresUpload, db_handler=Depends(get_db_handler), current_user: User = Depends(get_current_user)):
     try:
         current_user_id = current_user.id
-        db_genre = db_handler.create_current_user_genres(genre_id, current_user_id)
+        genre_id_list = personal_genres.id
+        db_genre = db_handler.create_current_user_genres(genre_id_list, current_user_id)
     except AppError as e:
         raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
