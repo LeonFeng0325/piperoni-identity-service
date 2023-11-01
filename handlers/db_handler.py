@@ -202,12 +202,12 @@ class DBHandler:
         return self._db.query(user_detail_table).all()
     
     
-    def create_current_user_personal_details(self, first_name: str, last_name: str, user_id: int):
+    def create_current_user_personal_details(self, first_name: str, last_name: str, title: str, description: str, preference, address: str, user_id: int):
         db_user = self.get_current_user_personal_details(user_id)
         if db_user:
             raise AlreadyExistsError("User details have already been created.")
         
-        db_instance = user_detail_table(first_name=first_name, last_name=last_name, user_id=user_id)
+        db_instance = user_detail_table(first_name=first_name, last_name=last_name, user_id=user_id, title=title, description=description, preference=preference, address=address)
         self._db.add(db_instance)
         self._db.commit()
         self._db.refresh(db_instance)

@@ -8,7 +8,8 @@ user_list = [
     User(hashed_password=get_password_hash("password"), email="b_feng@ucsb.edu"),
     User(hashed_password=get_password_hash("password"), email="aviv@ucsb.edu"),
     User(hashed_password=get_password_hash("password"), email="kya@ucsb.edu"),
-    User(hashed_password=get_password_hash("password"), email="andysgonzalez@ucsb.edu")
+    User(hashed_password=get_password_hash("password"), email="andysgonzalez@ucsb.edu"),
+    User(hashed_password=get_password_hash("password"), email="demo@ucsb.edu")
 ]
 
 genre_list = [

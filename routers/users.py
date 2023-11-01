@@ -72,7 +72,14 @@ async def create_current_user_personal_details(user_details: UserDetailCreate, d
         current_user_id = current_user.id
         first_name = user_details.first_name
         last_name = user_details.last_name
-        db_user_details = db_handler.create_current_user_personal_details(first_name, last_name, current_user_id)
+        title = user_details.title
+        description = user_details.description
+        preference = collaboration_map.get(user_details.preference, None)
+        address = user_details.address
+        if not preference:
+            raise InvalidParameterError("Invalid user preference data.")
+        
+        db_user_details = db_handler.create_current_user_personal_details(first_name, last_name, title, description, preference, address, current_user_id)
     except AlreadyExistsError as e:
          raise HTTPException(detail=str(e), status_code=status.HTTP_400_BAD_REQUEST)
     except AppError as e:

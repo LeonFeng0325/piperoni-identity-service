@@ -42,6 +42,11 @@ class UserDetailUpdate(BaseModel):
 class UserDetailCreate(BaseModel):
     first_name: str
     last_name: str
+    title: str
+    description: str
+    preference: str
+    address: str
+
 
 class PersonalGenresUpload(BaseModel):
     id: List[int]
