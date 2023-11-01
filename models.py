@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, ForeignKey
+from sqlalchemy import Integer, String, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from schemas import CollaborationPreference
 from database import Base
@@ -48,6 +48,8 @@ class PersonalGenre(Base):
     user: Mapped[User] = relationship(back_populates="genres")
     genre: Mapped[Genre] = relationship(back_populates="personalGenres")
 
+    __table_args__  = (UniqueConstraint('user_id', 'genre_id', name='unique_personal_genre'),)
+
 
 class Instrument(Base):
     __tablename__ = "instruments"
@@ -63,3 +65,5 @@ class PersonalInstrument(Base):
     instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id", ondelete="CASCADE"))
     user: Mapped[User] = relationship(back_populates='instruments')
     instrument: Mapped[Instrument] = relationship(back_populates='personalInstruments')
+
+    __table_args__ = (UniqueConstraint('user_id', 'instrument_id', name='unique_personal_instrument'),)
