@@ -7,12 +7,50 @@ from exception import InvalidParameterError, AlreadyExistsError
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 from datetime import timedelta
+import requests
+from jwt.algorithms import RSAAlgorithm
+from time import time
+import json
+import os
+
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
+APPLE_PUBLIC_KEY_URL = "https://appleid.apple.com/auth/keys"
+APPLE_PUBLIC_KEY = None
+APPLE_KEY_CACHE_EXP = 60 * 60 * 24
+APPLE_LAST_KEY_FETCH = 0
 
 authentication_router = APIRouter(
     tags=["authentication"],
 )
+
+def fetch_apple_public_key():
+    # Check to see if the public key is unset or is stale before returning
+    global APPLE_LAST_KEY_FETCH
+    global APPLE_PUBLIC_KEY
+
+    if (APPLE_LAST_KEY_FETCH + APPLE_KEY_CACHE_EXP) < int(time()) or APPLE_PUBLIC_KEY is None:
+        key_payload = requests.get(APPLE_PUBLIC_KEY_URL).json()
+        APPLE_PUBLIC_KEY = RSAAlgorithm.from_jwk(json.dumps(key_payload["keys"][0]))
+        APPLE_LAST_KEY_FETCH = int(time())
+
+    return APPLE_PUBLIC_KEY
+
+
+def decode_apple_user_token(apple_user_token):
+    public_key = fetch_apple_public_key()
+
+    try:
+        token = jwt.decode(apple_user_token, public_key, audience=os.getenv("APPLE_APP_ID"), algorithm="RS256")
+    except jwt.exceptions.ExpiredSignatureError as e:
+        raise Exception("That token has expired.")
+    except jwt.exceptions.InvalidAudienceError as e:
+        raise Exception("That token's audience did not match.")
+    except Exception as e:
+        print(e)
+        raise Exception("An unexpected error occurred.")
+
+    return token
 
 
 # Helper function to verify if the incoming HTTP has the valid JWT as the bearer token.
@@ -69,4 +107,21 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
         data={"sub": user.email}, expires_delta=access_token_expires
     )
 
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+# Hack: need to rework in future
+@authentication_router.post("/google_oauth/{email}", status_code=status.HTTP_200_OK, response_model=Token)
+async def google_login_for_access_token(email:str, db_handler=Depends(get_db_handler)):
+    user = db_handler.get_user_by_email(email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.email}, expires_delta=access_token_expires
+    )
     return {"access_token": access_token, "token_type": "bearer"}
