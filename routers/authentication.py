@@ -111,7 +111,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 
 
 # Hack: need to rework in future
-@authentication_router.post("/google_oauth/{email}", status_code=status.HTTP_200_OK, response_model=Token)
+@authentication_router.get("/google_oauth/{email}", status_code=status.HTTP_200_OK, response_model=Token)
 async def google_login_for_access_token(email:str, db_handler=Depends(get_db_handler)):
     user = db_handler.get_user_by_email(email)
     if not user:
