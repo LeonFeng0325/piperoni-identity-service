@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from auth.auth_token import create_access_token, oauth2_scheme, SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
-from schemas import User, Token
+from schemas import User, Token, GoogleSignInAccount
 from handlers.handlers import get_db_handler
 from exception import InvalidParameterError, AlreadyExistsError
 from fastapi.security import OAuth2PasswordRequestForm
@@ -80,7 +80,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db_handler=Depends(get
 @authentication_router.post("/signup", status_code=status.HTTP_201_CREATED)
 async def create_new_user(user: User, db_handler=Depends(get_db_handler)):
     try:
-        db_handler.create_user(user)
+        db_handler.create_user(user, False)
     except InvalidParameterError as e:
         raise HTTPException(detail=str(e), status_code=status.HTTP_400_BAD_REQUEST)
     except AlreadyExistsError as e:
@@ -110,18 +110,61 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-# Hack: need to rework in future
-@authentication_router.get("/google_oauth/{email}", status_code=status.HTTP_200_OK, response_model=Token)
-async def google_login_for_access_token(email:str, db_handler=Depends(get_db_handler)):
-    user = db_handler.get_user_by_email(email)
-    if not user:
+# 1. If user already created an account via custom auth, then user can use oauth with the same email to login as well.
+# 2. If user does not have an account, then sign in using oauth for the first time, we will create an account using oauth info, and user will not be able to login using custom auth.
+@authentication_router.post("/google_oauth", status_code=status.HTTP_200_OK)
+async def google_login_for_access_token(auth_instance: GoogleSignInAccount, db_handler=Depends(get_db_handler)):
+    
+    try:
+        user_id_token = auth_instance.id_token
+        if not user_id_token or len(user_id_token) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Missing id token.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Validate id token with google authentication server
+        google_authentication_server_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={user_id_token}"
+        response = requests.get(google_authentication_server_url)
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Cannot authenticate with Google auth server.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        data = response.json()
+        # Sanity checks on id token
+        if data["alg"] != "RS256" or data["typ"] != "JWT" or data["iss"] != "https://accounts.google.com" or data["email_verified"] != "true":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect id token metadata.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        if not data["aud"].endswith("apps.googleusercontent.com"):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect id token origin.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        user_email = data["email"]
+        db_user = db_handler.get_user_by_email(user_email)
+        if not db_user: # user first sign in using google oauth2
+            # register user in our database
+            # Be aware: this password is not usable since oauth2 user cannot be signed in using password
+            user = User(email=user_email, password="randompasswordthatdoesnotmatter1234567")
+            db_handler.create_user(user, True)
+
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(data={"sub": data["email"]}, expires_delta=access_token_expires)
+        
+    except Exception as _:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
-    )
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Errors occurred during authentication process.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    
     return {"access_token": access_token, "token_type": "bearer"}
