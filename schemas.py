@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 from pydantic import BaseModel
 import enum
 
@@ -53,3 +53,6 @@ class PersonalGenresUpload(BaseModel):
 
 class PersonalInstrumentsUpload(BaseModel):
     id: List[int]
+
+class GoogleSignInAccount(BaseModel): # Defined in Flutter google_sign_in package source code
+   id_token: str

@@ -21,15 +21,15 @@ class DBHandler:
     def get_users(self, skip: int = 0, limit: int = 100):
         return self._db.query(user_table).offset(skip).limit(limit).all()
     
-    def authenticate_user(self, email: str, password: str):
+    def authenticate_user(self, email: str, password: str): # custom auth
         db_user = self.get_user_by_email(email)
-        if not db_user:
+        if not db_user or db_user.oauth2:
             return False
-        if not verify_password(password ,db_user.hashed_password):
+        if not verify_password(password, db_user.hashed_password):
             return False
         return db_user
     
-    def create_user(self, user: User):
+    def create_user(self, user: User, oauth: bool):
         user_email = user.email.strip()
         password = user.password.strip()
 
@@ -45,7 +45,7 @@ class DBHandler:
             raise InvalidParameterError("Password is required")
 
         user_hash = get_password_hash(password) # Unique to each user
-        db_user = user_table(email=user.email, hashed_password=user_hash)
+        db_user = user_table(email=user.email, hashed_password=user_hash, oauth2=oauth)
 
         self._db.add(db_user)
         self._db.commit()

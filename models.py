@@ -13,6 +13,7 @@ class User(Base):
     id = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     email = mapped_column(String, unique=True, index=True, nullable=False) # User email has to be unique, and this is also user's username
     hashed_password = mapped_column(String, nullable=False) # Hashed using SHA 256 and user specific info
+    oauth2: Mapped[Boolean] = mapped_column(Boolean, default=False) # is user oauth2 or not
     genres: Mapped[List['PersonalGenre']] = relationship(back_populates='user', cascade="all,delete")
     instruments: Mapped[List['PersonalInstrument']] = relationship(back_populates='', cascade="all,delete")
     details: Mapped['UserDetail'] = relationship(back_populates='user', cascade="all,delete")
