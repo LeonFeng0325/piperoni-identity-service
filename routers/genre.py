@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from handlers.handlers import get_db_handler
+from handlers.handlers import get_db_handler, get_current_user_service
 from routers.authentication import get_current_user
 from exception import  AppError, NotFoundError
 from schemas import Genre, User, PersonalGenresUpload
-from typing import List
 
 genre_router = APIRouter(
     prefix="/api/genres",
@@ -14,7 +13,7 @@ genre_router = APIRouter(
 @genre_router.get("/all", status_code=status.HTTP_200_OK)
 async def get_all_genres(db_handler=Depends(get_db_handler)):
     try:
-        genre_list = db_handler.get_all_music_genre()
+        genre_list = db_handler.get_all_music_genres()
     except AppError as e:
         raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
@@ -25,10 +24,10 @@ async def get_all_genres(db_handler=Depends(get_db_handler)):
 
 
 @genre_router.get("/me", status_code=status.HTTP_200_OK)
-async def get_personal_genres(db_handler=Depends(get_db_handler), current_user = Depends(get_current_user)):
+async def get_personal_genres(current_user_service = Depends(get_current_user_service), current_user = Depends(get_current_user)):
     try:
         current_user_id = current_user.id
-        db_personal_list = db_handler.get_current_user_genres(current_user_id)
+        db_personal_list = current_user_service.fetch_current_user_personal_genres(current_user_id)
     except AppError as e:
         raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
@@ -89,7 +88,7 @@ async def delete_personal_genre(genre_id: int, db_handler=Depends(get_db_handler
     
     return {
         "data": {"user": current_user.email},
-        "message": f"SUCCESS: current user personal genre deleted by id."
+        "message": f"SUCCESS: current user personal genre deleted with id: {genre_id}."
     }
 
 
