@@ -1,19 +1,34 @@
 import uvicorn
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from database import engine, get_db
 from models import Base
-from routers import users, authentication, genre, instrument
+from routers import users, authentication, genre, instrument, personal_chat
+from sockets.server import sio_app
 from preflight import genre_list, user_list, personal_genre_list, instrument_list, personal_instrument_list, personal_detail_list
 
 Base.metadata.create_all(bind=engine) # Create database tables on server start.
 
 app = FastAPI()
 
-# Register API endpoints
+# Enable all origins for simplicity. Adjust as needed.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# mount socketio server as sub application to the FastAPI web server
+app.mount('/ws', app=sio_app)
+
+# Register HTTP API endpoints to the main FastAPI web server
 app.include_router(authentication.authentication_router)
 app.include_router(users.user_router)
 app.include_router(genre.genre_router)
 app.include_router(instrument.instrument_router)
+app.include_router(personal_chat.personal_chat_router)
 
 
 @app.get("/")
