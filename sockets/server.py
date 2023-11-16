@@ -8,7 +8,7 @@ import logging
 # Creating an object
 logger = logging.getLogger()
  
-# Setting the threshold of logger to DEBUG
+# Setting the threshold of logger to INFO
 logger.setLevel(logging.INFO)
 
 sio_server = socketio.AsyncServer(
@@ -38,6 +38,8 @@ def validate_client_credential(token):
                 raise ConnectionRefusedError("Invalid Authentication provided from client.")
     except JWTError:
         raise ConnectionRefusedError("Error occurred during token validation process.")
+    finally:
+        db_session.close()
 
     return user
     
@@ -86,7 +88,9 @@ async def private_dm(sid, data):
     
 
     logger.info(f"SERVER: Private dm from client with socket id: {sid}. Content: {content} ")
-    await sio_server.emit("private_dm", data)
+    receiver_sid = current_users.get(receiver_id, None)
+    if receiver_sid:
+        await sio_server.emit("private_dm", data, to=receiver_sid)
 
 
 @sio_server.event

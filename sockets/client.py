@@ -5,7 +5,7 @@ import asyncio
 
 sio_client = socketio.AsyncClient()
 # Should always fetch a valid token using /token endpoint in swagger ui for testing purpose
-accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiX2ZlbmdAdWNzYi5lZHUiLCJleHAiOjE3MDAxMDc3NTN9.gagdmzQ5tDaJvfqxldtmz10cf4tUrMRwLdiHscbkYKw'
+accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiX2ZlbmdAdWNzYi5lZHUiLCJleHAiOjE3MDAxNjgzMDB9.kxVJGHg9jxvaPVn6aXBoi_A4fJHYDHuSZCKFmYB4Qcg'
 
 @sio_client.event
 async def connect():
@@ -33,15 +33,21 @@ async def private_dm(message):
 
 
 async def main():
-    print("CLIENT: Initiating socket connection to server...")
-    await sio_client.connect(url='http://localhost:8000', socketio_path='/ws/sockets.io', auth={'Authorization': accessToken})
-    await sio_client.sleep(1) # Wait for server response on client connection request
-    await sio_client.call("private_dm", {
-        "content": "How are you doing Kirill?",
-        "auth_token": accessToken,
-        "receiver_id": 3
-    })
-    await sio_client.disconnect()
+    try:
+        print("CLIENT: Initiating socket connection to server...")
+        await sio_client.connect(url='http://localhost:80', socketio_path='/ws/sockets.io', auth={'Authorization': accessToken})
+        await sio_client.sleep(1)  # Wait for server response on client connection request
+        await sio_client.call("private_dm", {
+            "content": "How are you doing Kirill?",
+            "auth_token": accessToken,
+            "receiver_id": 3
+        })
+    except Exception as e:
+        print(f"CLIENT: Connection failed with error: {e}")
+    finally:
+        # Ensure that the client session is properly closed
+        await sio_client.disconnect()
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
