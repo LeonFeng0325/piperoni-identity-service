@@ -5,7 +5,7 @@ import asyncio
 
 sio_client = socketio.AsyncClient()
 # Should always fetch a valid token using /token endpoint in swagger ui for testing purpose
-accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiX2ZlbmdAdWNzYi5lZHUiLCJleHAiOjE3MDAyNTI1OTV9.hsx9JZCJ72gDU1I9YuWofvl3gjl_1woPKd3W9qPtOwc'
+accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiX2ZlbmdAdWNzYi5lZHUiLCJleHAiOjE3MDAyNTM4MzR9.VRM3RjqHw3-j3mpJXsH1qeYCRK_sA_nWFYQJUR73M9M"
 
 @sio_client.event
 async def connect():

@@ -114,7 +114,6 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 # 2. If user does not have an account, then sign in using oauth for the first time, we will create an account using oauth info, and user will not be able to login using custom auth.
 @authentication_router.post("/google_oauth", status_code=status.HTTP_200_OK)
 async def google_login_for_access_token(auth_instance: GoogleSignInAccount, db_handler=Depends(get_db_handler)):
-    
     try:
         user_id_token = auth_instance.id_token
         if not user_id_token or len(user_id_token) == 0:
@@ -159,7 +158,6 @@ async def google_login_for_access_token(auth_instance: GoogleSignInAccount, db_h
 
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(data={"sub": data["email"]}, expires_delta=access_token_expires)
-        
     except Exception as _:
         raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

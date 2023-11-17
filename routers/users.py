@@ -29,7 +29,31 @@ async def get_all_users(db_handler=Depends(get_db_handler)):
         "messages": f"SUCCESS: {len(user_list)} users retrieved."
     }
 
+@user_router.get("/all/genres", status_code=status.HTTP_200_OK)
+async def get_all_users_genres(db_handler=Depends(get_db_handler)):
+    try:
+        users_genre_list = db_handler.get_all_users_genres()
+    except AppError as e:
+        raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    return {
+        "data": users_genre_list,
+        "messages": f"SUCCESS all users genres retrieved."
+    }
 
+@user_router.get("/all/instruments", status_code=status.HTTP_200_OK)
+async def get_all_users_instruments(db_handler=Depends(get_db_handler)):
+    try:
+        users_instruments_list = db_handler.get_all_users_instruments()
+    except AppError as e:
+        raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    return {
+        "data": users_instruments_list,
+        "messages": f"SUCCESS all users instruments retrieved."
+    }
+
+    
 @user_router.get("/me")
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user

@@ -5,6 +5,7 @@ from database import engine, get_db
 from models import Base
 from routers import users, authentication, genre, instrument, personal_chat
 from sockets.server import sio_app
+from routers import users, authentication, genre, instrument, files
 from preflight import genre_list, user_list, personal_genre_list, instrument_list, personal_instrument_list, personal_detail_list
 
 Base.metadata.create_all(bind=engine) # Create database tables on server start.
@@ -29,6 +30,7 @@ app.include_router(users.user_router)
 app.include_router(genre.genre_router)
 app.include_router(instrument.instrument_router)
 app.include_router(personal_chat.personal_chat_router)
+app.include_router(files.router)
 
 
 @app.get("/")

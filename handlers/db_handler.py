@@ -24,6 +24,14 @@ class DBHandler:
     def get_users(self, skip: int = 0, limit: int = 100):
         return self._db.query(user_table).offset(skip).limit(limit).all()
     
+    def get_all_users_genres(self):
+        users = self._db.query(user_table).all()
+        return [{"user_id": user.id, "genres": [genre.genre.name for genre in user.genres]} for user in users]
+
+    def get_all_users_instruments(self):
+        users = self._db.query(user_table).all()
+        return [{"user_id": user.id, "instruments": [instrument.instrument.name for instrument in user.instruments]} for user in users]
+
     def authenticate_user(self, email: str, password: str): # custom auth
         db_user = self.get_user_by_email(email)
         if not db_user or db_user.oauth2:
@@ -68,7 +76,7 @@ class DBHandler:
         return response
     
     # Genres table queries
-    def get_all_music_genre(self, skip: int = 0, limit: int = 100):
+    def get_all_music_genres(self, skip: int = 0, limit: int = 100):
         return self._db.query(genre_table).offset(skip).limit(limit).all()
     
     def create_genre(self, genre: Genre):
@@ -107,15 +115,15 @@ class DBHandler:
     
 
     def delete_current_user_genre(self, user_id: int, genre_id: int):
-        results = self._db.query(personal_genre_table).where(personal_genre_table.user_id==user_id)
-        for result in results:
-            if result.genre_id == genre_id:
-                query = delete(personal_genre_table).where(personal_genre_table.genre_id == genre_id)
-                self._db.execute(query)
-                self._db.commit()
-                return
+        result = self._db.query(personal_genre_table).where(personal_genre_table.user_id==user_id, personal_genre_table.genre_id==genre_id).first()
+        if not result:
+            raise NotFoundError("Current user does not have the specified genre.")
+
+        query = delete(personal_genre_table).where(personal_genre_table.genre_id == genre_id, personal_genre_table.user_id==user_id)
+        self._db.execute(query)
+        self._db.commit()
         
-        raise NotFoundError("Personal genre with given genre id not found.")
+        return
     
     def create_current_user_genres(self, genre_id: List[int], user_id: int):
         arr = []
@@ -141,7 +149,7 @@ class DBHandler:
         return self._db.query(personal_genre_table).offset(skip).limit(limit).all()
 
     # Instrument table queries
-    def get_all_instrument(self, skip: int = 0, limit: int = 100):
+    def get_all_instruments(self, skip: int = 0, limit: int = 100):
         return self._db.query(instrument_table).offset(skip).limit(limit).all()
     
     def get_instrument_by_name(self, name: str):
@@ -176,6 +184,17 @@ class DBHandler:
 
         return
     
+    def delete_current_user_instrument_by_id(self, user_id: int, instrument_id: int):
+        result = self._db.query(personal_instrument_table).where(personal_instrument_table.user_id == user_id, personal_instrument_table.instrument_id == instrument_id).first()
+        if not result:
+            raise NotFoundError("Current user doesn't have specified instrument.")
+
+        query = delete(personal_instrument_table).where(personal_instrument_table.instrument_id == instrument_id, personal_instrument_table.user_id== user_id)
+        self._db.execute(query)
+        self._db.commit()
+
+        return
+
     def create_personal_instruments(self, user_id: int, instrument_id: List[int]):
         arr = []
     

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from handlers.handlers import get_db_handler
+from handlers.handlers import get_db_handler, get_current_user_service
 from routers.authentication import get_current_user
 from exception import  AppError, NotFoundError, AlreadyExistsError
 from schemas import Instrument, User, PersonalInstrumentsUpload
@@ -13,7 +13,7 @@ instrument_router = APIRouter(
 @instrument_router.get("/all", status_code=status.HTTP_200_OK)
 async def get_all_instruments(db_handler=Depends(get_db_handler)):
     try:
-        instrument_list = db_handler.get_all_instrument()
+        instrument_list = db_handler.get_all_instruments()
     except AppError as e:
         raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
@@ -23,10 +23,10 @@ async def get_all_instruments(db_handler=Depends(get_db_handler)):
     }
 
 @instrument_router.get("/me", status_code=status.HTTP_201_CREATED)
-async def get_current_user_instruments(db_handler=Depends(get_db_handler), current_user: User=Depends(get_current_user)):
+async def get_current_user_instruments(current_user_service=Depends(get_current_user_service), current_user: User=Depends(get_current_user)):
     try:
         current_user_id = current_user.id
-        result = db_handler.get_current_user_instruments(current_user_id)
+        result = current_user_service.fetch_current_user_personal_instruments(current_user_id)
     except AppError as e:
         raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
@@ -82,6 +82,20 @@ async def delete_instrument_by_name(instrument_name: str, db_handler=Depends(get
         "messages": f"SUCCESS: instrument deleted."
     }
 
+@instrument_router.delete("/me/{instrument_id}", status_code=status.HTTP_200_OK)
+async def delete_current_user_personal_instrument_by_id(instrument_id: int, db_handler=Depends(get_db_handler), current_user: User=Depends(get_current_user)):
+    try:
+        current_user_id = current_user.id
+        db_handler.delete_current_user_instrument_by_id(current_user_id, instrument_id)
+    except NotFoundError as e:
+        raise HTTPException(detail=str(e), status_code=status.HTTP_404_NOT_FOUND)
+    except AppError as e:
+        raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    return {
+        "data": "",
+        "messages": f"SUCCESS: personal instrument with id: {instrument_id} deleted."
+    }
 
 @instrument_router.post("/me", status_code=status.HTTP_201_CREATED)
 async def create_current_user_instruments(personal_instrument_list: PersonalInstrumentsUpload, db_handler=Depends(get_db_handler), current_user: User=Depends(get_current_user)):
