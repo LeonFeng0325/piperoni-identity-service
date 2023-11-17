@@ -35,6 +35,9 @@ async def private_dm(message):
 async def main():
     try:
         print("CLIENT: Initiating socket connection to server...")
+        # For local docker compose environment use 80 port
+        # For local development use 8000 port
+        # For interacting with prod server, change localhost to ec2 instance url with port 80
         await sio_client.connect(url='http://localhost:80', socketio_path='/ws/sockets.io', auth={'Authorization': accessToken}, transports=['websocket'])
         await sio_client.call("private_dm", {
             "content": "New stuff?",
