@@ -29,5 +29,5 @@ jobs:
                 sudo docker-compose build --no-cache
                 sudo docker-compose up -d
                 EOL
-                sleep 2 && curl -X 'GET' 'http://$HOST/reset' -H 'accept: application/json'
+                sleep 2 && curl -X 'GET' "http://$HOST/reset" -H 'accept: application/json'
               
