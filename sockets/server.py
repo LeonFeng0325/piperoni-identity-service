@@ -22,7 +22,7 @@ sio_app = socketio.ASGIApp(
     socketio_path='sockets.io'
 )
 
-current_users = {} # hashmap that tracks of user id and their corresponding  socket id
+current_users = {} # hashmap that tracks of user id and their corresponding socket id
 
 def validate_client_credential(token):
     try:

@@ -5,7 +5,7 @@ import asyncio
 
 sio_client = socketio.AsyncClient()
 # Should always fetch a valid token using /token endpoint in swagger ui for testing purpose
-accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiX2ZlbmdAdWNzYi5lZHUiLCJleHAiOjE3MDAxNjgzMDB9.kxVJGHg9jxvaPVn6aXBoi_A4fJHYDHuSZCKFmYB4Qcg'
+accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiX2ZlbmdAdWNzYi5lZHUiLCJleHAiOjE3MDAyNTI1OTV9.hsx9JZCJ72gDU1I9YuWofvl3gjl_1woPKd3W9qPtOwc'
 
 @sio_client.event
 async def connect():
@@ -35,10 +35,9 @@ async def private_dm(message):
 async def main():
     try:
         print("CLIENT: Initiating socket connection to server...")
-        await sio_client.connect(url='http://localhost:80', socketio_path='/ws/sockets.io', auth={'Authorization': accessToken})
-        await sio_client.sleep(1)  # Wait for server response on client connection request
+        await sio_client.connect(url='http://localhost:80', socketio_path='/ws/sockets.io', auth={'Authorization': accessToken}, transports=['websocket'])
         await sio_client.call("private_dm", {
-            "content": "How are you doing Kirill?",
+            "content": "New stuff?",
             "auth_token": accessToken,
             "receiver_id": 3
         })
