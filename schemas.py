@@ -56,3 +56,8 @@ class PersonalInstrumentsUpload(BaseModel):
 
 class GoogleSignInAccount(BaseModel): # Defined in Flutter google_sign_in package source code
    id_token: str
+
+class PersonalChatMessageCreate(BaseModel):
+    sender_id: int
+    receiver_id: int
+    content: str

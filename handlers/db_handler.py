@@ -1,7 +1,7 @@
 from auth.auth_password import get_password_hash
 from sqlalchemy.orm import Session
-from sqlalchemy import delete, update
-from models import User as user_table, Genre as genre_table, PersonalGenre as personal_genre_table, Instrument as instrument_table, PersonalInstrument as personal_instrument_table, UserDetail as user_detail_table
+from sqlalchemy import delete, update, or_, desc
+from models import User as user_table, Genre as genre_table, PersonalGenre as personal_genre_table, Instrument as instrument_table, PersonalInstrument as personal_instrument_table, UserDetail as user_detail_table, Chat as chat_table
 from schemas import User, Genre, Instrument
 from exception import AlreadyExistsError, InvalidParameterError, NotFoundError
 from utils.email_verification import is_valid_email
@@ -18,6 +18,9 @@ class DBHandler:
     def get_user_by_email(self, email: str):
         return self._db.query(user_table).filter(user_table.email == email.strip()).first()
     
+    def get_user_by_id(self, user_id: int):
+         return self._db.query(user_table).filter(user_table.id == user_id).first()
+
     def get_users(self, skip: int = 0, limit: int = 100):
         return self._db.query(user_table).offset(skip).limit(limit).all()
     
@@ -245,3 +248,46 @@ class DBHandler:
         updated_user_detail = self.get_current_user_personal_details(user_id)
 
         return updated_user_detail
+    
+    # personal chat queries
+    
+    def get_all_personal_chat_message(self, user_id: int):
+        db_user = self.get_user_by_id(user_id)
+        if not db_user:
+            raise NotFoundError("User does not exist.")
+        
+        return self._db.query(chat_table).where(or_(chat_table.sender_id == user_id, chat_table.receiver_id==user_id)).order_by(desc(chat_table.timestamp)).all()
+    
+    def create_personal_chat_message(self, sender_id: int, receiver_id: int, content: str):
+        db_receiver = self.get_user_by_id(receiver_id)
+        db_sender = self.get_user_by_id(sender_id)
+        if not db_sender:
+            raise NotFoundError("Sender does no exist.")
+        if not db_receiver:
+            raise NotFoundError("Receiver does not exist.")
+        if not content or len(content) == 0:
+            raise InvalidParameterError("Message content should not be empty.")
+        
+        db_chat_instance = chat_table(sender_id=sender_id, receiver_id=receiver_id, content=content)
+        self._db.add(db_chat_instance)
+        self._db.commit()
+        self._db.refresh(db_chat_instance)
+
+        return db_chat_instance
+    
+    def get_current_user_dms(self, current_user_id: int, correspondent_id: int):
+        db_correspondent = self.get_user_by_id(correspondent_id)
+        if not db_correspondent:
+            raise NotFoundError("Correspondent does not exist.")
+        
+        c_id = db_correspondent.id
+        
+        return self._db.query(chat_table).where(or_(
+            chat_table.sender_id == current_user_id, 
+            chat_table.receiver_id== current_user_id, 
+            chat_table.sender_id == c_id, 
+            chat_table.receiver_id == c_id)).order_by(desc(chat_table.timestamp)).all()
+
+
+    
+

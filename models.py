@@ -1,9 +1,10 @@
-from sqlalchemy import Integer, String, ForeignKey, UniqueConstraint, Boolean
+from sqlalchemy import Boolean, DateTime, Integer, String, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from schemas import CollaborationPreference
 from database import Base
 from typing import List
 from sqlalchemy import Enum
+from datetime import datetime
 
 # Database models defined here
 
@@ -17,7 +18,6 @@ class User(Base):
     genres: Mapped[List['PersonalGenre']] = relationship(back_populates='user', cascade="all,delete")
     instruments: Mapped[List['PersonalInstrument']] = relationship(back_populates='', cascade="all,delete")
     details: Mapped['UserDetail'] = relationship(back_populates='user', cascade="all,delete")
-
 
 class UserDetail(Base):
     __tablename__ = "user_details"
@@ -68,3 +68,15 @@ class PersonalInstrument(Base):
     instrument: Mapped[Instrument] = relationship(back_populates='personalInstruments')
 
     __table_args__ = (UniqueConstraint('user_id', 'instrument_id', name='unique_personal_instrument'),)
+
+
+class Chat(Base):
+    __tablename__ = 'chats'
+    id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True)
+    timestamp: Mapped[DateTime] = mapped_column(DateTime, default=datetime.utcnow)
+    content: Mapped[str] = mapped_column(String(length=100))
+    sender_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id',))
+    receiver_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
+
+    sender: Mapped[User] = relationship('User', foreign_keys=[sender_id])
+    receiver: Mapped[User] = relationship('User', foreign_keys=[receiver_id])
