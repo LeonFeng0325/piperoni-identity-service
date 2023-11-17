@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Integer, String, ForeignKey, UniqueConstraint
+from sqlalchemy import Integer, String, ForeignKey, UniqueConstraint, Boolean
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from schemas import CollaborationPreference
 from database import Base
@@ -29,6 +29,7 @@ class UserDetail(Base):
     description = mapped_column(String)
     preference: Mapped[CollaborationPreference] = mapped_column(Enum(CollaborationPreference), default=CollaborationPreference.no_preference)
     address = mapped_column(String)
+    profile_picture = mapped_column(String, nullable=True)
     user: Mapped['User'] = relationship(back_populates="details")
 
 
