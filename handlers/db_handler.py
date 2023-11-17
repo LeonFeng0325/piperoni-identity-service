@@ -21,6 +21,14 @@ class DBHandler:
     def get_users(self, skip: int = 0, limit: int = 100):
         return self._db.query(user_table).offset(skip).limit(limit).all()
     
+    def get_all_users_genres(self):
+        users = self._db.query(user_table).all()
+        return [{"user_id": user.id, "genres": [genre.genre.name for genre in user.genres]} for user in users]
+
+    def get_all_users_instruments(self):
+        users = self._db.query(user_table).all()
+        return [{"user_id": user.id, "instruments": [instrument.instrument.name for instrument in user.instruments]} for user in users]
+
     def authenticate_user(self, email: str, password: str): # custom auth
         db_user = self.get_user_by_email(email)
         if not db_user or db_user.oauth2:
