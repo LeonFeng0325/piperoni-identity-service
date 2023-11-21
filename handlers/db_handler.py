@@ -1,6 +1,6 @@
 from auth.auth_password import get_password_hash
 from sqlalchemy.orm import Session
-from sqlalchemy import delete, update, or_, desc
+from sqlalchemy import delete, update, or_, desc, and_
 from models import User as user_table, Genre as genre_table, PersonalGenre as personal_genre_table, Instrument as instrument_table, PersonalInstrument as personal_instrument_table, UserDetail as user_detail_table, Chat as chat_table
 from schemas import User, Genre, Instrument
 from exception import AlreadyExistsError, InvalidParameterError, NotFoundError
@@ -283,11 +283,9 @@ class DBHandler:
         c_id = db_correspondent.id
         
         return self._db.query(chat_table).where(or_(
-            chat_table.sender_id == current_user_id, 
-            chat_table.receiver_id== current_user_id, 
-            chat_table.sender_id == c_id, 
-            chat_table.receiver_id == c_id)).order_by(desc(chat_table.timestamp)).all()
-
+            and_(chat_table.sender_id == current_user_id, chat_table.receiver_id == c_id), 
+            and_(chat_table.sender_id == c_id, chat_table.receiver_id== current_user_id,))
+                                                ).order_by(desc(chat_table.timestamp)).all()
 
     
 
