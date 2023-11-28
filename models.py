@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, DateTime, Integer, String, ForeignKey, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, Integer, String, ForeignKey, UniqueConstraint, ARRAY
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from schemas import CollaborationPreference
 from database import Base
@@ -18,7 +18,6 @@ class User(Base):
     genres: Mapped[List['PersonalGenre']] = relationship(back_populates='user', cascade="all,delete")
     instruments: Mapped[List['PersonalInstrument']] = relationship(back_populates='', cascade="all,delete")
     details: Mapped['UserDetail'] = relationship(back_populates='user', cascade="all,delete")
-
 class UserDetail(Base):
     __tablename__ = "user_details"
     id = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -30,6 +29,8 @@ class UserDetail(Base):
     preference: Mapped[CollaborationPreference] = mapped_column(Enum(CollaborationPreference), default=CollaborationPreference.no_preference)
     address = mapped_column(String)
     profile_picture = mapped_column(String, nullable=True)
+    followers = mapped_column(ARRAY(Integer), nullable=True, default=[])
+    following = mapped_column(ARRAY(Integer), nullable=True, default=[])
     user: Mapped['User'] = relationship(back_populates="details")
 
 

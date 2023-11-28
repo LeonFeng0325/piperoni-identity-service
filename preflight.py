@@ -82,6 +82,7 @@ personal_instrument_list = [
     PersonalInstrument(user_id=5, instrument_id=5)
 ]
 
+
 personal_detail_list = [
     UserDetail(user_id=1, title="Music Producer", description="Hello, my name is Rishabh. I am a college student at UCSB.", preference=CollaborationPreference.no_preference, address="Santa Barbara, CA 93106", first_name="Rishabh", last_name="Poikayil"),
     UserDetail(user_id=2, title="Guitarist", description="Hello, my name is Leon. I am a college student at UCSB.", preference=CollaborationPreference.in_person, address="Santa Barbara, CA 93106", first_name="Leon", last_name="Feng"),

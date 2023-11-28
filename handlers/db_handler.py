@@ -249,6 +249,61 @@ class DBHandler:
 
         return updated_user_detail
     
+    def follow_user(self, current_user_id: int, other_user_id: int):
+        # Get the current user's details
+        current_user_details = self.get_current_user_personal_details(current_user_id)
+        if not current_user_details:
+            raise NotFoundError("Current user has not initialized personal details.")
+
+        # Get the other user's details
+        other_user_details = self.get_current_user_personal_details(other_user_id)
+        if not other_user_details:
+            raise NotFoundError("Other user has not initialized personal details.")
+
+        # Add current user to other user's followers list
+        new_followers_other_user = other_user_details.followers + [current_user_id]
+        query_other_user = update(user_detail_table).where(user_detail_table.user_id == other_user_id).values({'followers': new_followers_other_user})
+        self._db.execute(query_other_user)
+        self._db.commit()
+
+        # Add other user to current user's following list only if not already present
+        if (other_user_id not in current_user_details.following) and (other_user_id != current_user_id):
+            new_following_current_user = current_user_details.following + [other_user_id]
+            query_current_user = update(user_detail_table).where(user_detail_table.user_id == current_user_id).values({'following': new_following_current_user})
+            self._db.execute(query_current_user)
+            self._db.commit()
+
+        # Return the updated current user details
+        updated_current_user_detail = self.get_current_user_personal_details(current_user_id)
+        return updated_current_user_detail
+
+    def unfollow_user(self, current_user_id: int, other_user_id: int):
+        # Get the current user's details
+        current_user_details = self.get_current_user_personal_details(current_user_id)
+        if not current_user_details:
+            raise NotFoundError("Current user has not initialized personal details.")
+
+        # Get the other user's details
+        other_user_details = self.get_current_user_personal_details(other_user_id)
+        if not other_user_details:
+            raise NotFoundError("Other user has not initialized personal details.")
+
+        # Remove current user from other user's followers list
+        new_followers_other_user = [uid for uid in other_user_details.followers if uid != current_user_id]
+        query_other_user = update(user_detail_table).where(user_detail_table.user_id == other_user_id).values({'followers': new_followers_other_user})
+        self._db.execute(query_other_user)
+        self._db.commit()
+
+        # Remove other user from current user's following list
+        new_following_current_user = [uid for uid in current_user_details.following if uid != other_user_id]
+        query_current_user = update(user_detail_table).where(user_detail_table.user_id == current_user_id).values({'following': new_following_current_user})
+        self._db.execute(query_current_user)
+        self._db.commit()
+
+        # Return the updated current user details
+        updated_current_user_detail = self.get_current_user_personal_details(current_user_id)
+        return updated_current_user_detail
+    
     # personal chat queries
     
     def get_all_personal_chat_message(self, user_id: int):
