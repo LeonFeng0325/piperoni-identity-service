@@ -45,6 +45,22 @@ def get_profile_pic(current_user=Depends(get_current_user), db_handler=Depends(g
 
     return Response(content=picture_bytes, media_type="image/png")
     
+@router.get("/profile/{user_id}")
+def get_profile_pic_by_id(user_id: int, db_handler=Depends(get_db_handler)):
+    user_details = db_handler.get_current_user_personal_details(user_id)
+    if not user_details:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User details not found.")
+    if not user_details.profile_picture:
+        default_pfp_req = requests.get('https://zultimate.com/wp-content/uploads/2019/12/default-profile.png')
+        return Response(content=default_pfp_req.content, media_type="image/png")
+    
+    picture_file = open(user_details.profile_picture, "rb")
+
+    picture_bytes = picture_file.read()
+
+    return Response(content=picture_bytes, media_type="image/png")
+
+
 @router.get("/profile/all")
 def get_all_profile_pics(db_handler=Depends(get_db_handler)):
     user_details = db_handler.get_all_user_personal_details()
