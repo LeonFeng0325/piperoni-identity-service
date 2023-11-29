@@ -114,6 +114,41 @@ async def create_current_user_personal_details(user_details: UserDetailCreate, d
         "messages": f"SUCCESS: created personal details for current users."
     }
 
+@user_router.put("/follow", status_code=status.HTTP_200_OK)
+async def follow(other_user_id: int, db_handler=Depends(get_db_handler), current_user: User = Depends(get_current_user)):
+    try:
+        current_user_id = current_user.id
+        db_current_user_details = db_handler.follow_user(current_user_id, other_user_id)
+        if not db_current_user_details:
+            raise NotFoundError("No personal details found by current user id.")
+    except NotFoundError as e:
+        raise HTTPException(detail=str(e), status_code=status.HTTP_404_NOT_FOUND)
+    except AppError as e:
+        raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    return {
+        "data": {"user": current_user.email, "payload": db_current_user_details},
+        "messages": f"SUCCESS: {current_user.email} is now following user with id {other_user_id}."
+    }
+
+
+@user_router.put("/unfollow", status_code=status.HTTP_200_OK)
+async def unfollow(other_user_id: int, db_handler=Depends(get_db_handler), current_user: User = Depends(get_current_user)):
+    try:
+        current_user_id = current_user.id
+        db_current_user_details = db_handler.unfollow_user(current_user_id, other_user_id)
+        if not db_current_user_details:
+            raise NotFoundError("No personal details found by current user id.")
+    except NotFoundError as e:
+        raise HTTPException(detail=str(e), status_code=status.HTTP_404_NOT_FOUND)
+    except AppError as e:
+        raise HTTPException(detail=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    return {
+        "data": {"user": current_user.email, "payload": db_current_user_details},
+        "messages": f"SUCCESS: {current_user.email} unfollowed user with id {other_user_id}."
+    }
+
 
 @user_router.put("/details/me", status_code=status.HTTP_200_OK)
 async def update_current_user_personal_details_address(payload: UserDetailUpdate, db_handler=Depends(get_db_handler), current_user: User = Depends(get_current_user)):

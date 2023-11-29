@@ -46,6 +46,8 @@ class UserDetailCreate(BaseModel):
     description: str
     preference: str
     address: str
+    followers: List[int]
+    following: List[int]
 
 
 class PersonalGenresUpload(BaseModel):
