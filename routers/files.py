@@ -6,11 +6,16 @@ from handlers.handlers import get_db_handler
 import requests
 
 router = APIRouter(prefix="/api/files", tags=["files"])
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @router.post("/upload")
 async def upload_file(file: UploadFile, current_user=Depends(get_current_user), db_handler=Depends(get_db_handler)):
-    if file.content_type != "image/png":
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File must be a png image.")
+    # Check if the file has an allowed extension
+    if not allowed_file(file.filename):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST) 
     contents = await file.read()
     filepath = f"/pics/{current_user.id}.png"
 
