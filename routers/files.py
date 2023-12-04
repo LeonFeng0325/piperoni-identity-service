@@ -11,6 +11,43 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@router.get("/upload_audio")
+async def upload_audio_file(file: UploadFile, current_user=Depends(get_current_user), db_handler=Depends(get_db_handler)):
+    if file.content_type != "audio/mpeg":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File must be an mp3 audio file.")
+    contents = await file.read()
+    filepath = f"/audio/{current_user.id}.mp3"
+
+    # Have to try to create the directory first
+    # https://stackoverflow.com/questions/23793987/write-a-file-to-a-directory-that-doesnt-exist
+    try:
+        os.makedirs(os.path.dirname(filepath))
+    except FileExistsError:
+        pass
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+
+    with open(filepath, "wb") as f:
+        f.write(contents)
+
+    db_handler.update_current_user_personal_details_fields("audio_sample", filepath, current_user.id)
+
+    return {"filepath": filepath}
+
+@router.get("/audio/{user_id}")
+def get_audio_file(user_id: int, db_handler=Depends(get_db_handler)):
+    user_details = db_handler.get_current_user_personal_details(user_id)
+    if not user_details:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User details not found.")
+    if not user_details.audio_sample:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User audio sample not found.")
+    
+    audio_file = open(user_details.audio_sample, "rb")
+
+    audio_bytes = audio_file.read()
+
+    return Response(content=audio_bytes, media_type="audio/mpeg")
+
 @router.post("/upload")
 async def upload_file(file: UploadFile, current_user=Depends(get_current_user), db_handler=Depends(get_db_handler)):
     # Check if the file has an allowed extension

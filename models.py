@@ -29,6 +29,7 @@ class UserDetail(Base):
     preference: Mapped[CollaborationPreference] = mapped_column(Enum(CollaborationPreference), default=CollaborationPreference.no_preference)
     address = mapped_column(String)
     profile_picture = mapped_column(String, nullable=True)
+    audio_sample = mapped_column(String, nullable=True)
     followers = mapped_column(ARRAY(Integer), nullable=True, default=[])
     following = mapped_column(ARRAY(Integer), nullable=True, default=[])
     user: Mapped['User'] = relationship(back_populates="details")
