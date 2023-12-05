@@ -1,11 +1,10 @@
 import uvicorn
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, get_db
 from models import Base
-from routers import users, authentication, genre, instrument, personal_chat
+from routers import users, authentication, genre, instrument, personal_chat, files
 from sockets.server import sio_app
-from routers import users, authentication, genre, instrument, files
 from preflight import genre_list, user_list, personal_genre_list, instrument_list, personal_instrument_list, personal_detail_list
 
 Base.metadata.create_all(bind=engine) # Create database tables on server start.
@@ -32,6 +31,12 @@ app.include_router(instrument.instrument_router)
 app.include_router(personal_chat.personal_chat_router)
 app.include_router(files.router)
 
+@app.middleware("http")
+async def reject_env_paths(request: Request, call_next):
+    if ".env" in request.url.path:
+        raise HTTPException(status_code=418)
+    response = await call_next(request)
+    return response
 
 @app.get("/")
 async def index():
