@@ -11,7 +11,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@router.get("/upload_audio")
+@router.post("/upload_audio")
 async def upload_audio_file(file: UploadFile, current_user=Depends(get_current_user), db_handler=Depends(get_db_handler)):
     if file.content_type != "audio/mpeg":
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File must be an mp3 audio file.")
